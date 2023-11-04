@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Page Title</title>
+    <meta name="description" content="Roughly 155 characters">
+    <link rel="stylesheet" type="text/css" href="global.css">
+    <!-- Added Google Font, replicate if taking from google -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Tangerine">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="text_choice.js"></script>
+  </head>
+  <body>
+    <svg id="my-svg" width="500" height="500">
+        <!-- Your SVG content will be inserted here -->
+    </svg>
+    <div>
+      <label for="nameInput">Enter your name:</label>
+      <input type="text" id="nameInput" placeholder="Type your name here">
+      <button id="updateNameButton">Submit</button>
+    </div>
+    <select id="font-select">
+      <option value="Futura" style="font-family: 'Futura';">Futura</option>
+      <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+      <option value="Arial" style="font-family: Arial;">Arial</option>
+      <option value="Tangerine" style="font-family: Tangerine;">Tangerine</option>
+      <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
+      <!-- Add other font options here -->
+    </select>
+    <select id="icon-select">
+      <option value="svgs/None.svg">None</option>
+      <option value="svgs/GG Logo svg.svg">GG Logo 1</option>
+      <option value="svgs/GG Logo svg2.svg">GG Logo 2</option>
+      <!-- Add other font options here -->
+    </select>
+    <button id="download-button">Download SVG</button>
+  </body>
+</html> 
