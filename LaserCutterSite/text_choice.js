@@ -7,15 +7,19 @@ async function fetchSvg(url) {
 }
 
 function chooseFont() {
+  const fontInput = document.getElementById('font-select'); // Assuming you have a <select> element with id="font-select"
+  const svg = document.getElementById("my-svg");
+  const name = svg.querySelector("#name-text").textContent || "Name Goes Here";
+  const selectedFont = fontInput.value;
 
+  updateTextElement(svg, name, selectedFont);
 }
 
-function createTextElement(name) {
+function createTextElement(name, font = "Futura") {
   const textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  name_font = "Verdana"
   textElement.setAttribute("x", "250");
   textElement.setAttribute("y", "250");
-  textElement.setAttribute("font-family", name_font);
+  textElement.setAttribute("font-family", font);
   textElement.setAttribute("font-size", "24");
   textElement.setAttribute("fill", "black");
   textElement.setAttribute("id", "name-text");
@@ -23,26 +27,46 @@ function createTextElement(name) {
   return textElement;
 }
 
-function createIconContainer(iconSvg) {
-  const iconContainer = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  iconContainer.setAttribute("x", "100");
-  iconContainer.setAttribute("y", "200");
-  iconContainer.setAttribute("width", "30mm");
-  iconContainer.setAttribute("height", "30mm");
-  iconContainer.appendChild(iconSvg.cloneNode(true));
-  return iconContainer;
-}
-
-function updateTextElement(svg, newName) {
+function updateTextElement(svg, newName, newFont) {
   let textElement = svg.querySelector("#name-text");
+  const maxWidth = 240; 
+
   if (textElement) {
     textElement.textContent = newName;
+    textElement.setAttribute("font-family", newFont);
+    fitTextToContainer(textElement, maxWidth);
   } 
   else {
-    textElement = createTextElement(newName);
-    textElement.id = "name-text"; 
+    textElement = createTextElement(newName, newFont);
     svg.appendChild(textElement);
+    fitTextToContainer(textElement, maxWidth);
   }
+}
+
+function fitTextToContainer(textElement, maxWidth) {
+  // Create a temporary span for measurement
+  const tempSpan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+  tempSpan.setAttribute("style", "white-space: nowrap;");
+  tempSpan.textContent = textElement.textContent;
+  textElement.textContent = '';
+  textElement.appendChild(tempSpan);
+
+  // Start with a large font size
+  let fontSize = 40;
+  textElement.setAttribute("font-size", fontSize);
+
+  // Measure the width of the text
+  let textWidth = tempSpan.getComputedTextLength();
+
+  // Reduce the font size until the text fits within the maximum width
+  while (textWidth > maxWidth && fontSize > 0) {
+    fontSize--;
+    textElement.setAttribute("font-size", fontSize);
+    textWidth = tempSpan.getComputedTextLength();
+  }
+
+  // Set the final text content with the adjusted font size
+  textElement.textContent = tempSpan.textContent;
 }
 
 // Set up event listeners after the page has loaded
@@ -60,22 +84,38 @@ window.addEventListener('DOMContentLoaded', (event) => {
   });
 });
 
-function updateIcon(svg, newIconSvgUrl) {
+function createIconContainer(iconSvg, x, y, width, height) {
+  const iconContainer = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  iconContainer.setAttribute("x", x);
+  iconContainer.setAttribute("y", y);
+  iconContainer.setAttribute("width", width);
+  iconContainer.setAttribute("height", height);
+  iconContainer.appendChild(iconSvg.cloneNode(true));
+  return iconContainer;
+}
+
+async function updateIcon(svg, newIconSvgUrl) {
+  console.log(`Fetching new icon: ${newIconSvgUrl}`); // Debugging line
+
   let iconContainer = svg.querySelector("#icon-container");
   if (iconContainer) {
     svg.removeChild(iconContainer);
   }
 
-  fetchSvg(newIconSvgUrl).then(newIconSvg => {
-    const newIconContainer = createIconContainer(newIconSvg);
+  try {
+    const newIconSvg = await fetchSvg(newIconSvgUrl);
+    const newIconContainer = createIconContainer(newIconSvg, 100, 200, "30mm", "30mm");
     newIconContainer.id = "icon-container"; 
     svg.appendChild(newIconContainer);
-  });
+    console.log("Icon updated successfully."); // Debugging line
+  } catch (error) {
+    console.error("Failed to update the icon:", error); // Debugging line
+  }
 }
 
 async function main() {
-  const mainSvg = await fetchSvg('svgs/Rect.svg');
-  const iconSvg = await fetchSvg('svgs/GG Logo svg.svg');
+  const mainSvg = await fetchSvg('svgs/Square Glitter Tile.svg');
+  const iconSvg = await fetchSvg('svgs/None.svg');
 
   const svg = document.getElementById("my-svg");
   svg.appendChild(mainSvg.cloneNode(true));
@@ -83,7 +123,7 @@ async function main() {
   const textElement = createTextElement("Name Goes Here");
   svg.appendChild(textElement);
 
-  const iconContainer = createIconContainer(iconSvg);
+  const iconContainer = createIconContainer(iconSvg, 100, 200, "30mm", "30mm");
   svg.appendChild(iconContainer);
 
   setUpDownload(svg);
@@ -108,10 +148,17 @@ main();
 document.addEventListener('DOMContentLoaded', () => {
   const updateButton = document.getElementById('updateNameButton');
   const nameInput = document.getElementById('nameInput');
+  const fontSelect = document.getElementById('font-select'); // Get the font select element
+  const iconSelect = document.getElementById('icon-select'); // Get the icon select element
   const svg = document.getElementById("my-svg");
 
   updateButton.addEventListener('click', () => {
     const newName = nameInput.value;
-    updateTextElement(svg, newName);
+    const newFont = fontSelect.value; // Get the selected font
+    const newIconUrl = iconSelect.value; // Get the selected icon URL
+
+    updateTextElement(svg, newName, newFont); // Update the name and font
+    updateIcon(svg, newIconUrl); // Update the icon
+    
   });
 });
